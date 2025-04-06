@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: scholar_postgres
+    environment:
+      POSTGRES_DB: scholar_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - scholar_network
+
+  crawler:
+    build: .
+    container_name: scholar_crawler
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=scholar_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - MAX_RESULTS=5
+      - SEARCH_QUERY=mathematics
+      - DELAY_BETWEEN_REQUESTS=5.0
+    volumes:
+      - ./logs:/app/logs
+      - ./src/crawler/data:/app/src/crawler/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - scholar_network
+
+networks:
+  scholar_network:
+    driver: bridge
+
+volumes:
+  postgres_data: 
