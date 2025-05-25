@@ -61,3 +61,5 @@ src/crawler/data/
 *.bak
 *.swp
 *~ 
+
+postgres_data/

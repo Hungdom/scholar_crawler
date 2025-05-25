@@ -5,16 +5,17 @@ services:
     image: postgres:15
     container_name: scholar_postgres
     environment:
-      POSTGRES_DB: scholar_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-scholar_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_PORT: 5432
     ports:
       - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    # volumes:
+      # - ./postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 5432"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,21 +27,22 @@ services:
     networks:
       - scholar_network
 
-  crawler:
-    build: .
-    container_name: scholar_crawler
+  crawler_1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scholar_crawler_1
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=scholar_db
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - MAX_RESULTS=5
-      - SEARCH_QUERY=mathematics
-      - DELAY_BETWEEN_REQUESTS=5.0
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-scholar_db}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - YEAR_START=2001
+      - YEAR_END=2001
     volumes:
+      - ./src:/app/src
       - ./logs:/app/logs
-      - ./src/crawler/data:/app/src/crawler/data
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,6 +55,89 @@ services:
     networks:
       - scholar_network
 
+
+  crawler_2:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: scholar_crawler_2
+      environment:
+        - POSTGRES_USER=${POSTGRES_USER:-postgres}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+        - POSTGRES_DB=${POSTGRES_DB:-scholar_db}
+        - POSTGRES_HOST=postgres
+        - POSTGRES_PORT=5432
+        - YEAR_START=2002
+        - YEAR_END=2002
+      volumes:
+        - ./src:/app/src
+        - ./logs:/app/logs
+      depends_on:
+        postgres:
+          condition: service_healthy
+      restart: unless-stopped
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      networks:
+        - scholar_network
+
+  crawler_3:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: scholar_crawler_3
+      environment:
+        - POSTGRES_USER=${POSTGRES_USER:-postgres}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+        - POSTGRES_DB=${POSTGRES_DB:-scholar_db}
+        - POSTGRES_HOST=postgres
+        - POSTGRES_PORT=5432
+        - YEAR_START=2003
+        - YEAR_END=2003
+      volumes:
+        - ./src:/app/src
+        - ./logs:/app/logs
+      depends_on:
+        postgres:
+          condition: service_healthy
+      restart: unless-stopped
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      networks:
+        - scholar_network
+  crawler_4:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: scholar_crawler_4
+      environment:
+        - POSTGRES_USER=${POSTGRES_USER:-postgres}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+        - POSTGRES_DB=${POSTGRES_DB:-scholar_db}
+        - POSTGRES_HOST=postgres
+        - POSTGRES_PORT=5432
+        - YEAR_START=2004
+        - YEAR_END=2004
+      volumes:
+        - ./src:/app/src
+        - ./logs:/app/logs
+      depends_on:
+        postgres:
+          condition: service_healthy
+      restart: unless-stopped
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
+      networks:
+        - scholar_network
 networks:
   scholar_network:
     driver: bridge

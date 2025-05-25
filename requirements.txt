@@ -6,3 +6,4 @@ requests==2.31.0
 SQLAlchemy==2.0.25
 alembic==1.13.1
 semanticscholar==0.10.0
+scrapy==2.11.0
